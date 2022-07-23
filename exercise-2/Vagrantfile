@@ -1,0 +1,38 @@
+Vagrant.configure("2") do |config|
+    servers=[
+        {
+          :hostname => "Dns-srv",
+          :box => "ubuntu/bionic64",
+          :ip => "192.168.57.2",
+          :ssh_port => '2200'
+        },
+        {
+          :hostname => "Dns-client01",
+          :box => "ubuntu/bionic64",
+          :ip => "192.168.57.3",
+          :ssh_port => '2201'
+        },
+        {
+          :hostname => "Dns-client02",
+          :box => "ubuntu/bionic64",
+          :ip => "192.168.57.4",
+          :ssh_port => '2202'
+        }
+      ]
+
+    servers.each do |machine|
+        config.vm.define machine[:hostname] do |node|
+            node.vm.box = machine[:box]
+            node.vm.hostname = machine[:hostname]
+            node.vm.network :private_network, ip: machine[:ip]
+            node.vm.network "forwarded_port", guest: 22, host: machine[:ssh_port], id: "ssh"
+            
+
+            node.vm.provider :virtualbox do |vb|
+                vb.customize ["modifyvm", :id, "--memory", 2048]
+                vb.customize ["modifyvm", :id, "--cpus", 1]
+            end
+        end
+    end
+end
+
